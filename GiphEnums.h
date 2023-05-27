@@ -1,0 +1,18 @@
+#pragma once
+enum Commands {
+	LOAD_GAME_BOARD,
+	PRINT_GAME_BOARD,
+	DO_MOVE,
+};
+
+enum PawnColors {
+	WHITE,
+	BLACK,
+};
+
+enum ReturnLogs {
+	BOARD_STATE_OK,
+	WRONG_WHITE_PAWNS_NUMBER,
+	WRONG_BLACK_PAWNS_NUMBER,
+	WRONG_BOARD_ROW_LENGTH,
+};
