@@ -6,13 +6,13 @@ Parser::Parser(Board* board) {
 
 bool Parser::ParseCommand() {
 	std::string line;
-	while (line.length() == 0) {
-		getline(std::cin, line);
-		if (std::cin.eof())
-			return false;
+	int c;
+	while ((c = getchar()) != EOF) {
+		if (c == '\n') break;
+		line += (char)c;
 	}
 	command = line;
-	return true;
+	return c != EOF;
 }
 
 void Parser::ParseInfo() {
@@ -31,7 +31,7 @@ void Parser::ParseInfo() {
 	std::cin.get();
 	std::cin >> board->boardInfo.reserve[WHITE];
 	std::cin >> board->boardInfo.reserve[BLACK];
-	std::cin >> board->boardInfo.startPlayer;
+	std::cin >> board->boardInfo.activePlayer;
 	std::cin.get();
 
 	board->boardExpectedValues.pawnsInTotal[WHITE] = board->boardInfo.pawns[WHITE];

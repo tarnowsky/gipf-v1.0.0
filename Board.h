@@ -2,31 +2,19 @@
 #include <vector>
 #include "Logger.h"
 
-class Board;
-
-class Validator {
-public:
-	explicit Validator(Board* board);
-	ReturnLogs Validate();
-private:
-	Board* board;
-	bool CheckPawnsInTotal(PawnColors pawnColor) const;
-	bool CheckBoardRows();
-};
-
-
 class Board {
 public:
+	std::vector<std::vector<char>> board;
+
 	struct BoardInfo {
 		int dimension;
 		int pawnsToCapture;
 		int pawns[2];
 		int reserve[2];
-		char startPlayer;
+		char activePlayer;
 
 	} boardInfo{};
 
-	std::vector<std::vector<char>> board;
 	
 	struct BoardExpectedValues {
 		std::vector<int> rowWidth;
@@ -38,32 +26,26 @@ public:
 		void Print() const {
 			std::cout << row << ", " << col << std::endl;
 		}
+		bool operator==(const Position& other) const {
+			return (row == other.row && col == other.col);
+		}
 	};
-
+	struct Move {
+		std::string from;
+		std::string to;
+		Position fPosition;
+		Position tPosition;
+	} move;
 
 public:
+	void PrintGameState() const;
 	void Clear();
-	void PrintBoard();
+	void PrintBoard() const;
+	void PrintBoardInfo() const;
 	void PrintBoardDev();
-	void ValidateBoard();
-	Position FieldDecoder(const std::string& field, int dimension) const;
-	void ValidateMove(const std::string& from, const std::string to) {
-		Position fPosition = FieldDecoder(from, boardInfo.dimension);
-		Position tPosition = FieldDecoder(to, boardInfo.dimension);
-		if (ValidatePosition(fPosition, from) && ValidatePosition(tPosition, to)) {
-			Logger::Log(MOVE_COMMITTED);
-		}
-	}
-	bool ValidatePosition(const Position& position, const std::string &field ) {
-		int maxVal = boardInfo.dimension*2-2;
-		if (position.row > maxVal || position.col > maxVal ||
-			position.row < 0 || position.col < 0 ||
-			board[position.row][position.col] == NULL) {
-			Logger::LogWithPosition(BAD_MOVE_WRONG_INDEX, field);
-			return false;
-		}
-		return true;
-	}
-
+	Position FieldDecoder(const std::string& field) const;
+	void SetMove(const std::string& from, const std::string& to);
+	void MakeMove();
+	void MoveRow(int rowOffset, int colOffset, bool isCorner);
 };
 

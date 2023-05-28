@@ -140,6 +140,7 @@
     <ClInclude Include="GiphEnums.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="Validator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

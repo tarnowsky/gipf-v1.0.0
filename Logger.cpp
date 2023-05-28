@@ -27,16 +27,25 @@ void Logger::Log(ReturnLogs returnLog) {
 	std::cout << std::endl;
 }
 
-void Logger::LogWithPosition(ReturnLogs returnLog, const std::string& position) {
+void Logger::LogWithField(ReturnLogs returnLog, const std::string& field) {
 	switch (returnLog) {
 	case BAD_MOVE_WRONG_INDEX:
-		std::cout << "BAD_MOVE_" << position << "_IS_WRONG_INDEX";
+		std::cout << "BAD_MOVE_";
+		for (auto& i : field)
+			std::cout << i;
+		std::cout << "_IS_WRONG_INDEX";
 		break;
 	case BAD_MOVE_WRONG_STARTING_FIELD:
-		std::cout << "BAD_MOVE_" << position <<"_IS_WRONG_STARTING_FIELD";
+		std::cout << "BAD_MOVE_";
+		for (auto& i : field)
+			std::cout << i; 
+		std::cout << "_IS_WRONG_STARTING_FIELD";
 		break;
 	case BAD_MOVE_WRONG_DESTINATION_FIELD:
-		std::cout << "BAD_MOVE_" << position << "_IS_WRONG_DESTINATION_FIELD";
+		std::cout << "BAD_MOVE_";
+		for (auto& i : field)
+			std::cout << i;
+		std::cout << "_IS_WRONG_DESTINATION_FIELD";
 		break;
 	}
 	std::cout << std::endl;

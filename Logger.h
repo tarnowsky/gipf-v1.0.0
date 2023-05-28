@@ -4,6 +4,6 @@
 class Logger {
 public:
 	static void Log(ReturnLogs returnLog);
-	static void LogWithPosition(ReturnLogs returnLog, const std::string& position);
+	static void LogWithField(ReturnLogs returnLog, const std::string& field);
 };
 
