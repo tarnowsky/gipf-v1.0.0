@@ -35,13 +35,35 @@ public:
 
 	struct Position {
 		int row, col;
+		void Print() const {
+			std::cout << row << ", " << col << std::endl;
+		}
 	};
+
 
 public:
 	void Clear();
 	void PrintBoard();
+	void PrintBoardDev();
 	void ValidateBoard();
-
+	Position FieldDecoder(const std::string& field, int dimension) const;
+	void ValidateMove(const std::string& from, const std::string to) {
+		Position fPosition = FieldDecoder(from, boardInfo.dimension);
+		Position tPosition = FieldDecoder(to, boardInfo.dimension);
+		if (ValidatePosition(fPosition, from) && ValidatePosition(tPosition, to)) {
+			Logger::Log(MOVE_COMMITTED);
+		}
+	}
+	bool ValidatePosition(const Position& position, const std::string &field ) {
+		int maxVal = boardInfo.dimension*2-2;
+		if (position.row > maxVal || position.col > maxVal ||
+			position.row < 0 || position.col < 0 ||
+			board[position.row][position.col] == NULL) {
+			Logger::LogWithPosition(BAD_MOVE_WRONG_INDEX, field);
+			return false;
+		}
+		return true;
+	}
 
 };
 

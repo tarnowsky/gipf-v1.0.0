@@ -9,9 +9,9 @@ public:
 	~Giph();
 	void Start();
 private:
-	void CommandManager(std::string command);
+	void CommandManager(const std::string& command);
 public:
-	Board::Position FieldDecoder(std::string field, int dimension) const;
+	
 
 };
 

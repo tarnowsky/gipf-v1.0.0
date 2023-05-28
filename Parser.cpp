@@ -45,27 +45,37 @@ void Parser::ParseInfo() {
 }
 
 bool Parser::ParseBoard() {
-	int spacing = board->boardInfo.dimension - 1;
+	int spacing = board->boardInfo.dimension;
 	std::vector<std::vector<char>>& bboard = board->board;
 
-	for (int i = 0; i < 2 * board->boardInfo.dimension - 1; i++) {
+	for (int i = 0; i < 2 * board->boardInfo.dimension + 1; i++) {
+		bboard.push_back({});
 		std::string line;
 		int c;
-		while ((c = getchar()) != '\n' && c != EOF)
-			line += (char)c;
-		if (c == EOF) return false;
 
-		bboard.push_back({});
+		if (i == 0 || i == 2 * board->boardInfo.dimension) {
+			for (int _ = 0; _ < board->boardInfo.dimension + 1; _++)
+				bboard[bboard.size() - 1].push_back('+');
+		}
+		else {
+			while ((c = getchar()) != '\n' && c != EOF)
+				line += (char)c;
+			if (c == EOF) return false;
 
-		for (size_t j = 0; j < line.length(); j++) {
-			if (line[j] == ' ') continue;
-			bboard[i].push_back(line[j]);
+			bboard[i].push_back('+');
+
+			for (size_t j = 0; j < line.length(); j++) {
+				if (line[j] == ' ') continue;
+				bboard[i].push_back(line[j]);
+			}
+
+			bboard[i].push_back('+');
 		}
 
 		if (spacing > 0)
 			for (int _ = 0; _ < spacing; _++)
 				bboard[i].push_back(NULL);
-		else
+		else if (spacing < 0)
 			for (int _ = 0; _ > spacing; _--)
 				bboard[i].insert(bboard[i].begin(), NULL);
 

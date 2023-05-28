@@ -20,13 +20,38 @@ void Board::PrintBoard() {
 			toggle *= -1;
 
 		for (auto& field : row)
-			if (field)
+			if (field && field != '+')
 				std::cout << field << ' ';
 
 		std::cout << std::endl;
 	}
 }
 
+void Board::PrintBoardDev() {
+	for (auto& row : board) {
+		for (auto& field : row)
+		{
+			if (field)
+				std::cout << field << ' ';
+			else std::cout << 0 << ' ';
+		}
+		std::cout << std::endl;
+	}
+}
+
 void Board::ValidateBoard() {
 	Logger::Log(Validator(this).Validate());
+}
+
+Board::Position Board::FieldDecoder(const std::string& field, int dimension) const {
+	Board::Position position;
+	int rowOffset = 0;
+	position.col = field[0] - 'a';
+	if (position.col > dimension - 1) {
+		rowOffset = position.col - (dimension - 1);
+	}
+	position.row = (field[1] - '0') - dimension - (field[0] - 'a');
+	position.row += rowOffset;
+	position.row *= -1;
+	return position;
 }
