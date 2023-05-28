@@ -24,8 +24,8 @@ void Parser::ParseInfo() {
 		c = getchar();
 	}
 
-	board->boardInfo.x = std::stoi(num);
-	std::cin >> board->boardInfo.y;
+	board->boardInfo.dimension = std::stoi(num);
+	std::cin >> board->boardInfo.pawnsToCapture;
 	std::cin >> board->boardInfo.pawns[WHITE];
 	std::cin >> board->boardInfo.pawns[BLACK];
 	std::cin.get();
@@ -39,25 +39,37 @@ void Parser::ParseInfo() {
 
 	int upDowner = 1;
 	for (int i = 0; i != -1; i += upDowner) {
-		board->boardExpectedValues.rowWidth.push_back(board->boardInfo.x + i);
-		if (i == board->boardInfo.x - 1) upDowner = -1;
+		board->boardExpectedValues.rowWidth.push_back(board->boardInfo.dimension + i);
+		if (i == board->boardInfo.dimension - 1) upDowner = -1;
 	}
 }
 
 bool Parser::ParseBoard() {
-	for (int i = 0; i < 2 * board->boardInfo.x - 1; i++) {
+	int spacing = board->boardInfo.dimension - 1;
+	std::vector<std::vector<char>>& bboard = board->board;
+
+	for (int i = 0; i < 2 * board->boardInfo.dimension - 1; i++) {
 		std::string line;
 		int c;
 		while ((c = getchar()) != '\n' && c != EOF)
 			line += (char)c;
 		if (c == EOF) return false;
 
-		board->board.push_back({});
+		bboard.push_back({});
 
 		for (size_t j = 0; j < line.length(); j++) {
 			if (line[j] == ' ') continue;
-			board->board[i].push_back(line[j]);
+			bboard[i].push_back(line[j]);
 		}
+
+		if (spacing > 0)
+			for (int _ = 0; _ < spacing; _++)
+				bboard[i].push_back(NULL);
+		else
+			for (int _ = 0; _ > spacing; _--)
+				bboard[i].insert(bboard[i].begin(), NULL);
+
+		spacing--;
 	}
 	return true;
 }

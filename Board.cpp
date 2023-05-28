@@ -8,9 +8,25 @@ void Board::Clear() {
 }
 
 void Board::PrintBoard() {
-	for (auto& i : board) {
-		for (auto& j : i)
-			std::cout << j << ' ';
+	int toggle = 1;
+	int numOfSpace = boardInfo.dimension;
+
+	for (auto& row : board) {
+		numOfSpace -= 1 * toggle;
+		for (int i = 0; i < numOfSpace; i++)
+			std::cout << ' ';
+
+		if (!numOfSpace)
+			toggle *= -1;
+
+		for (auto& field : row)
+			if (field)
+				std::cout << field << ' ';
+
 		std::cout << std::endl;
 	}
+}
+
+void Board::ValidateBoard() {
+	Logger::Log(Validator(this).Validate());
 }

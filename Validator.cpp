@@ -33,8 +33,14 @@ bool Validator::CheckPawnsInTotal(PawnColors pawnColor) const{
 }
 
 bool Validator::CheckBoardRows() {
-	for (size_t row = 0; row < board->board.size(); ++row)
-		if (board->board[row].size() != (size_t)board->boardExpectedValues.rowWidth[row])
+	for (size_t row = 0; row < board->board.size(); ++row) {
+		int counter = 0;
+		for (auto& field : board->board[row]) {
+			if (field == ' ') continue;
+			counter++;
+		}
+		if (counter != board->boardExpectedValues.rowWidth[row])
 			return false;
+	}
 	return true;
 }

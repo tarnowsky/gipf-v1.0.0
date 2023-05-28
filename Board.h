@@ -18,7 +18,8 @@ private:
 class Board {
 public:
 	struct BoardInfo {
-		int x, y;
+		int dimension;
+		int pawnsToCapture;
 		int pawns[2];
 		int reserve[2];
 		char startPlayer;
@@ -26,16 +27,21 @@ public:
 	} boardInfo{};
 
 	std::vector<std::vector<char>> board;
-
+	
 	struct BoardExpectedValues {
 		std::vector<int> rowWidth;
 		int pawnsInTotal[2];
 	} boardExpectedValues{};
+
+	struct Position {
+		int row, col;
+	};
+
 public:
 	void Clear();
 	void PrintBoard();
-	void ValidateBoard() {
-		Logger::Log(Validator(this).Validate());
-	}
+	void ValidateBoard();
+
+
 };
 

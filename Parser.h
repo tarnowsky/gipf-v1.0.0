@@ -9,9 +9,8 @@ public:
 	explicit Parser(Board* board);
 	bool ParseCommand();
 	void ParseGame();
-private:
-	Board* board;
-private:
 	void ParseInfo();
 	bool ParseBoard();
+private:
+	Board* board;
 };
