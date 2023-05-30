@@ -5,7 +5,14 @@ Validator::Validator(Board* board) : board(board) {}
 void Validator::ValidateBoard() {
 	if (CheckBoardRows()) {
 		if (CheckPawnsInTotal(WHITE)) {
-			if (CheckPawnsInTotal(BLACK)) Logger::Log(BOARD_STATE_OK);
+			if (CheckPawnsInTotal(BLACK)) {
+				int chains = FindChains();
+				if (!chains) {
+					board->isValid = true;
+					Logger::Log(BOARD_STATE_OK);
+				}
+				else Logger::LogWithNum(ERROR_FOUND_ROW_OF_LENGTH_K, chains);
+			}
 			else Logger::Log(WRONG_BLACK_PAWNS_NUMBER);
 		}
 		else Logger::Log(WRONG_WHITE_PAWNS_NUMBER);
@@ -45,11 +52,11 @@ bool Validator::CheckBoardRows() {
 	}
 	return true;
 }
-void Validator::ValidateMove(const Board::Move& move) const {
-	if (ValidateIndex(move.fPosition, move.from) && ValidateIndex(move.tPosition, move.to))
-		if (ValiateStartingField(move.fPosition, move.from) && ValidateDestinationField(move.tPosition, move.to))
-			if (ValidateMoveDirection(move.fPosition, move.tPosition))
-				if (ValidateFullRow(move.fPosition, move.tPosition))
+void Validator::ValidateMove() const {
+	if (ValidateIndex(board->move.fPosition, board->move.from) && ValidateIndex(board->move.tPosition, board->move.to))
+		if (ValiateStartingField(board->move.fPosition, board->move.from) && ValidateDestinationField(board->move.tPosition, board->move.to))
+			if (ValidateMoveDirection(board->move.fPosition, board->move.tPosition))
+				if (ValidateFullRow(board->move.fPosition, board->move.tPosition))
 					board->MakeMove();
 }
 
@@ -190,4 +197,133 @@ void Validator::CheckRow(const Board::Position from, int& counter, int rowOffset
 			break;
 		}
 	}
+}
+
+int Validator::FindChains() const {
+	int chains = 0;
+	int visitedSize = board->boardInfo.dimension * 2 + 1;
+	Board::Visited** visited = new Board::Visited * [visitedSize];
+	for (int i = 0; i < visitedSize; i++)
+		visited[i] = new Board::Visited[visitedSize];
+	
+
+	for (int row = 1; row < board->boardInfo.dimension * 2; row++) {
+		for (int col = 1; col < board->boardInfo.dimension * 2; col++) {
+			char field = board->board[row][col];
+			if (field != 'W' && field != 'B') continue;
+			std::vector<Board::Position> neigbors = DiffNeighb({ row, col }, field);
+			if (!neigbors.size()) continue;
+
+			for (int i = 0; i < 6; i++)
+				visited[row][col].visitDirection[i] = true;
+
+			for (auto& dirPosition : neigbors) {
+				if (dirPosition.row == row - 1) {
+					if (dirPosition.col == col) {
+						if (CheckChain(visited, { row + 1, col }, 1, 0, board->board[row][col])) chains++;
+					}
+					else if (CheckChain(visited, { row + 1, col + 1}, 1, 1, board->board[row][col])) chains++;
+				}
+				else if (dirPosition.row == row + 1) {
+					if (dirPosition.col == col) {
+						if (CheckChain(visited, { row - 1, col }, -1, 0, board->board[row][col])) chains++;
+					}
+					else if (CheckChain(visited, { row - 1, col + 1}, -1, -1, board->board[row][col])) chains++;
+				}
+				else if (dirPosition.col == col - 1) {
+					if (CheckChain(visited, { row, col + 1 }, 0, 1, board->board[row][col])) chains++;
+				}
+				else if (CheckChain(visited, { row, col - 1 }, 0, -1, board->board[row][col])) chains++;
+			}
+		}
+	}
+	
+	for (int i = 0; i < visitedSize; i++)
+		delete[] visited[i];
+	delete[] visited;
+
+	return chains;
+}
+
+std::vector<Board::Position> Validator::DiffNeighb(const Board::Position& position, char player) const {
+	std::vector<Board::Position> neighbors;
+	AddNeighbIfDiff(neighbors, position.row + 1, position.col, player);
+	AddNeighbIfDiff(neighbors, position.row - 1, position.col, player);
+	AddNeighbIfDiff(neighbors, position.row, position.col + 1, player);
+	AddNeighbIfDiff(neighbors, position.row, position.col - 1, player);
+	AddNeighbIfDiff(neighbors, position.row + 1, position.col + 1, player);
+	AddNeighbIfDiff(neighbors, position.row - 1, position.col - 1, player);
+	return neighbors;
+}
+
+bool Validator::CheckChain(Board::Visited**& visited, const Board::Position& position, int rowOffset, int colOffset, char player) const {
+	int target = board->boardInfo.pawnsToCapture;
+	int visitedCounter = 1;
+	int chainSize = 1;
+
+	enum LocalDirection {
+		ACTUAL,
+		OPPOSITE,
+	};
+
+	Board::Visited::Directions* directions = new Board::Visited::Directions[2];
+	FillDirections(directions, rowOffset, colOffset);
+
+	for (int i = 0; ; i++) {
+		int row = position.row + i * rowOffset;
+		int col = position.col + i * colOffset;
+		if (board->board[row][col] != player) break;
+
+		visitedCounter += (int)visited[row][col].visitDirection[directions[ACTUAL]];
+		if (visitedCounter >= target) return false;
+
+		visited[row][col].visitDirection[directions[ACTUAL]] = true;
+		visited[row][col].visitDirection[directions[OPPOSITE]] = true;
+		chainSize++;
+	}
+
+	delete[] directions;
+	return chainSize >= target;
+}
+
+void Validator::FillDirections(Board::Visited::Directions*& directions, int rowOffset, int colOffset) const {
+	enum LocalDirection {
+		ACTUAL,
+		OPPOSITE,
+	};
+
+	if (rowOffset == -1) {
+		if (colOffset == -1) {
+			directions[ACTUAL] = Board::Visited::LEFT_CORNER;
+			directions[OPPOSITE] = Board::Visited::RIGHT_CORNER;
+		}
+		else {
+			directions[ACTUAL] = Board::Visited::UP;
+			directions[OPPOSITE] = Board::Visited::DOWN;
+		}
+	}
+	else if (rowOffset == 1) {
+		if (colOffset == 1) {
+			directions[ACTUAL] = Board::Visited::RIGHT_CORNER;
+			directions[OPPOSITE] = Board::Visited::LEFT_CORNER;
+		}
+		else {
+			directions[ACTUAL] = Board::Visited::DOWN;
+			directions[OPPOSITE] = Board::Visited::UP;
+		}
+	}
+	else if (colOffset == 1) {
+		directions[ACTUAL] = Board::Visited::RIGHT;
+		directions[OPPOSITE] = Board::Visited::LEFT;
+	}
+	else {
+		directions[ACTUAL] = Board::Visited::LEFT;
+		directions[OPPOSITE] = Board::Visited::RIGHT;
+	}
+}
+
+void Validator::AddNeighbIfDiff(std::vector<Board::Position>& neighb, const int& row, const int& col, const char& player) const {
+	if (board->board[row][col] &&
+		board->board[row][col] != player)
+		neighb.push_back({ row, col });
 }

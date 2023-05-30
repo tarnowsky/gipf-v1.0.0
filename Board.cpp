@@ -10,6 +10,7 @@ void Board::Clear() {
 		i.clear();
 	board.clear();
 	boardExpectedValues.rowWidth.clear();
+	isValid = false;
 }
 
 void Board::PrintBoard() const {

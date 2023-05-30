@@ -5,6 +5,7 @@
 class Board {
 public:
 	std::vector<std::vector<char>> board;
+	bool isValid = false;
 
 	struct BoardInfo {
 		int dimension;
@@ -36,6 +37,18 @@ public:
 		Position fPosition;
 		Position tPosition;
 	} move;
+
+	struct Visited {
+		static enum Directions {
+			LEFT_CORNER,
+			UP,
+			RIGHT,
+			RIGHT_CORNER,
+			DOWN,
+			LEFT
+		} directions;
+		bool visitDirection[6] = {};
+	};
 
 public:
 	void PrintGameState() const;

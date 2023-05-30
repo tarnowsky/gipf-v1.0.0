@@ -7,9 +7,8 @@ Giph::~Giph() {
 }
 
 void Giph::Start() {
-	while (parser->ParseCommand()) {
+	while (parser->ParseCommand())
 		CommandManager(parser->command);
-	}
 	CommandManager(parser->command);
 }
 
@@ -20,10 +19,11 @@ void Giph::CommandManager(const std::string& command) {
 	}
 	else if (command.find("DO_MOVE") != std::string::npos) {
 		board.SetMove(command.substr(8, 2), command.substr(11, 2));
-		validator->ValidateMove(board.move);
+		validator->ValidateMove();
 	}
 	else if (command.compare("PRINT_GAME_BOARD") == 0) {
-		board.PrintGameState();
+		if (board.isValid) board.PrintGameState();
+		else Logger::Log(EMPTY_BOARD);
 	}
 }
 

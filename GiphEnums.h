@@ -11,11 +11,14 @@ enum PawnColors {
 };
 
 enum ReturnLogs {
-	// test 1
+	// test 0
 	BOARD_STATE_OK,
 	WRONG_WHITE_PAWNS_NUMBER,
 	WRONG_BLACK_PAWNS_NUMBER,
 	WRONG_BOARD_ROW_LENGTH,
+
+	// test 1
+	EMPTY_BOARD,
 
 	// test 2
 	MOVE_COMMITTED,
