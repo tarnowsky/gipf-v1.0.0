@@ -9,6 +9,11 @@ public:
 	void ValidateBoard();
 
 	void ValidateMove() const;
+	int FindChains(bool collectPawns=false) const;
+private:
+	enum PawnCollector {
+		COLLECT_PAWNS = 1,
+	};
 private:
 	Board* board;
 
@@ -24,10 +29,9 @@ private:
 	bool ValidateFullRow(const Board::Position& from, const Board::Position& to) const;
 	void CheckRow(const Board::Position from, int& counter, int rowOffset, int colOffset) const;
 
-	int FindChains() const;
 	std::vector<Board::Position> DiffNeighb(const Board::Position& position, char player) const;
 	void AddNeighbIfDiff(std::vector<Board::Position>& neighb, const int& row, const int& col, const char& player) const;
-
-	bool CheckChain(Board::Visited**& visited, const Board::Position& position, int rowOffset, int colOffset, char player) const;
-	void FillDirections(Board::Visited::Directions*& directions, int rowOffset, int colOffset) const;
+	bool CheckChain(Board::Visited**& visited, const Board::Position& position, int rowOffset, int colOffset, char player, bool collectPawns) const;
+	void FillDirections(Board::Visited::Directions& direction, int rowOffset, int colOffset) const;
+	void CollectPawns(int i, const Board::Position& position, int rowOffset, int colOffset, char player) const;
 };

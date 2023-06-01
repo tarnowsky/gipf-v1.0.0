@@ -2,6 +2,8 @@
 #include <vector>
 #include "Logger.h"
 
+class Validator;
+
 class Board {
 public:
 	std::vector<std::vector<char>> board;
@@ -40,14 +42,11 @@ public:
 
 	struct Visited {
 		static enum Directions {
-			LEFT_CORNER,
-			UP,
-			RIGHT,
-			RIGHT_CORNER,
-			DOWN,
-			LEFT
+			HORIZONTAL,
+			VERTICAL,
+			SLANT,
 		} directions;
-		bool visitDirection[6] = {};
+		bool visitDirection[3] = {};
 	};
 
 public:
@@ -60,5 +59,6 @@ public:
 	void SetMove(const std::string& from, const std::string& to);
 	void MakeMove();
 	void MoveRow(int rowOffset, int colOffset, bool isCorner);
+	void NextPlayer();
 };
 

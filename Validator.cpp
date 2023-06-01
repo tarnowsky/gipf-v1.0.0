@@ -56,8 +56,11 @@ void Validator::ValidateMove() const {
 	if (ValidateIndex(board->move.fPosition, board->move.from) && ValidateIndex(board->move.tPosition, board->move.to))
 		if (ValiateStartingField(board->move.fPosition, board->move.from) && ValidateDestinationField(board->move.tPosition, board->move.to))
 			if (ValidateMoveDirection(board->move.fPosition, board->move.tPosition))
-				if (ValidateFullRow(board->move.fPosition, board->move.tPosition))
+				if (ValidateFullRow(board->move.fPosition, board->move.tPosition)) {
 					board->MakeMove();
+					FindChains(COLLECT_PAWNS);
+					board->NextPlayer();
+				}
 }
 
 bool Validator::ValiateStartingField(const Board::Position& position, const std::string& field) const {
@@ -199,7 +202,7 @@ void Validator::CheckRow(const Board::Position from, int& counter, int rowOffset
 	}
 }
 
-int Validator::FindChains() const {
+int Validator::FindChains(bool collectPawns) const {
 	int chains = 0;
 	int visitedSize = board->boardInfo.dimension * 2 + 1;
 	Board::Visited** visited = new Board::Visited * [visitedSize];
@@ -220,20 +223,20 @@ int Validator::FindChains() const {
 			for (auto& dirPosition : neigbors) {
 				if (dirPosition.row == row - 1) {
 					if (dirPosition.col == col) {
-						if (CheckChain(visited, { row + 1, col }, 1, 0, board->board[row][col])) chains++;
+						if (CheckChain(visited, { row + 1, col }, 1, 0, board->board[row][col], collectPawns)) chains++;
 					}
-					else if (CheckChain(visited, { row + 1, col + 1}, 1, 1, board->board[row][col])) chains++;
+					else if (CheckChain(visited, { row + 1, col + 1}, 1, 1, board->board[row][col], collectPawns)) chains++;
 				}
 				else if (dirPosition.row == row + 1) {
 					if (dirPosition.col == col) {
-						if (CheckChain(visited, { row - 1, col }, -1, 0, board->board[row][col])) chains++;
+						if (CheckChain(visited, { row - 1, col }, -1, 0, board->board[row][col], collectPawns)) chains++;
 					}
-					else if (CheckChain(visited, { row - 1, col + 1}, -1, -1, board->board[row][col])) chains++;
+					else if (CheckChain(visited, { row - 1, col + 1}, -1, -1, board->board[row][col], collectPawns)) chains++;
 				}
 				else if (dirPosition.col == col - 1) {
-					if (CheckChain(visited, { row, col + 1 }, 0, 1, board->board[row][col])) chains++;
+					if (CheckChain(visited, { row, col + 1 }, 0, 1, board->board[row][col], collectPawns)) chains++;
 				}
-				else if (CheckChain(visited, { row, col - 1 }, 0, -1, board->board[row][col])) chains++;
+				else if (CheckChain(visited, { row, col - 1 }, 0, -1, board->board[row][col], collectPawns)) chains++;
 			}
 		}
 	}
@@ -256,74 +259,72 @@ std::vector<Board::Position> Validator::DiffNeighb(const Board::Position& positi
 	return neighbors;
 }
 
-bool Validator::CheckChain(Board::Visited**& visited, const Board::Position& position, int rowOffset, int colOffset, char player) const {
+bool Validator::CheckChain(Board::Visited**& visited, const Board::Position& position, int rowOffset, int colOffset, char player, bool collectPawns) const {
 	int target = board->boardInfo.pawnsToCapture;
 	int visitedCounter = 1;
 	int chainSize = 1;
 
-	enum LocalDirection {
-		ACTUAL,
-		OPPOSITE,
-	};
+	Board::Visited::Directions direction;
+	FillDirections(direction, rowOffset, colOffset);
 
-	Board::Visited::Directions* directions = new Board::Visited::Directions[2];
-	FillDirections(directions, rowOffset, colOffset);
+	int row, col, i;
+	char field;
+	for (i = 0; ; i++) {
+		row = position.row + i * rowOffset;
+		col = position.col + i * colOffset;
+		field = board->board[row][col];
+		if (field != player) break;
 
-	for (int i = 0; ; i++) {
-		int row = position.row + i * rowOffset;
-		int col = position.col + i * colOffset;
-		if (board->board[row][col] != player) break;
-
-		visitedCounter += (int)visited[row][col].visitDirection[directions[ACTUAL]];
+		visitedCounter += (int)visited[row][col].visitDirection[direction];
 		if (visitedCounter >= target) return false;
 
-		visited[row][col].visitDirection[directions[ACTUAL]] = true;
-		visited[row][col].visitDirection[directions[OPPOSITE]] = true;
+		visited[row][col].visitDirection[direction] = true;
 		chainSize++;
 	}
 
-	delete[] directions;
+	if (chainSize >= target && collectPawns)
+		CollectPawns(i, position, rowOffset, colOffset, player);
+
 	return chainSize >= target;
 }
 
-void Validator::FillDirections(Board::Visited::Directions*& directions, int rowOffset, int colOffset) const {
-	enum LocalDirection {
-		ACTUAL,
-		OPPOSITE,
-	};
-
-	if (rowOffset == -1) {
-		if (colOffset == -1) {
-			directions[ACTUAL] = Board::Visited::LEFT_CORNER;
-			directions[OPPOSITE] = Board::Visited::RIGHT_CORNER;
-		}
-		else {
-			directions[ACTUAL] = Board::Visited::UP;
-			directions[OPPOSITE] = Board::Visited::DOWN;
-		}
+void Validator::FillDirections(Board::Visited::Directions& direction, int rowOffset, int colOffset) const {
+	if (rowOffset == -1 || rowOffset == 1) {
+		if (colOffset == -1 || colOffset == 1) direction = Board::Visited::SLANT;
+		else direction = Board::Visited::HORIZONTAL;
 	}
-	else if (rowOffset == 1) {
-		if (colOffset == 1) {
-			directions[ACTUAL] = Board::Visited::RIGHT_CORNER;
-			directions[OPPOSITE] = Board::Visited::LEFT_CORNER;
-		}
-		else {
-			directions[ACTUAL] = Board::Visited::DOWN;
-			directions[OPPOSITE] = Board::Visited::UP;
-		}
-	}
-	else if (colOffset == 1) {
-		directions[ACTUAL] = Board::Visited::RIGHT;
-		directions[OPPOSITE] = Board::Visited::LEFT;
-	}
-	else {
-		directions[ACTUAL] = Board::Visited::LEFT;
-		directions[OPPOSITE] = Board::Visited::RIGHT;
-	}
+	else direction = Board::Visited::VERTICAL;
 }
 
 void Validator::AddNeighbIfDiff(std::vector<Board::Position>& neighb, const int& row, const int& col, const char& player) const {
 	if (board->board[row][col] &&
 		board->board[row][col] != player)
 		neighb.push_back({ row, col });
+}
+
+void Validator::CollectPawns(int i, const Board::Position& position, int rowOffset, int colOffset, char player) const{
+	int row = position.row + i * rowOffset;
+	int col = position.col + i * colOffset;
+	char field = board->board[row][col];
+
+	for (i; field != '_' && field != '+'; i++) {
+		row = position.row + i * rowOffset;
+		col = position.col + i * colOffset;
+		field = board->board[row][col];
+	}
+
+	row = position.row + --i * rowOffset;
+	col = position.col + i * colOffset;
+	field = board->board[row][col];
+	if (field == '+' || field == '_') i--;
+
+	for (i; ; i--) {
+		row = position.row + i * rowOffset;
+		col = position.col + i * colOffset;
+		field = board->board[row][col];
+		if (field == '+' || field == '_') break;
+		if (field == player)
+			board->boardInfo.reserve[player == 'W' ? WHITE : BLACK]++;
+		board->board[row][col] = '_';
+	}
 }

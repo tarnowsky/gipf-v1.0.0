@@ -130,7 +130,6 @@ void Board::MakeMove() {
 				MoveRow(1, 0, false);
 		}
 	}
-	boardInfo.activePlayer = boardInfo.activePlayer == 'W' ? 'B' : 'W';
 }
 
 void Board::SetMove(const std::string& from, const std::string& to) {
@@ -138,4 +137,8 @@ void Board::SetMove(const std::string& from, const std::string& to) {
 	move.to = to;
 	move.fPosition = FieldDecoder(from);
 	move.tPosition = FieldDecoder(to);
+}
+
+void Board::NextPlayer() {
+	boardInfo.activePlayer = boardInfo.activePlayer == 'W' ? 'B' : 'W';
 }
