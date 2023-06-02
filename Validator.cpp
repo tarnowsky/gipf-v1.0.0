@@ -228,7 +228,7 @@ int Validator::FindChains(bool collectPawns) const {
 			std::vector<Board::Position> neigbors = DiffNeighb({ row, col }, field);
 			if (!neigbors.size()) continue;
 
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 3; i++)
 				visited[row][col].visitDirection[i] = true;
 
 			for (auto& dirPosition : neigbors) {

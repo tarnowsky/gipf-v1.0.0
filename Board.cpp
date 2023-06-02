@@ -45,7 +45,7 @@ void Board::PrintBoardInfo() const {
 	std::cout << boardInfo.activePlayer << std::endl;
 }
 
-void Board::PrintBoardDev() {
+void Board::PrintBoardDev() const {
 	for (auto& row : board) {
 		for (auto& field : row)
 		{

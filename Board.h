@@ -64,7 +64,7 @@ public:
 	void Clear();
 	void PrintBoard() const;
 	void PrintBoardInfo() const;
-	void PrintBoardDev();
+	void PrintBoardDev() const;
 	Position FieldDecoder(const std::string& field) const;
 	void SetMove(const std::string& from, const std::string& to);
 	void MakeMove();
