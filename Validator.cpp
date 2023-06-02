@@ -52,14 +52,25 @@ bool Validator::CheckBoardRows() {
 	}
 	return true;
 }
-void Validator::ValidateMove() const {
+void Validator::ValidateMove(bool extend) const {
 	if (ValidateIndex(board->move.fPosition, board->move.from) && ValidateIndex(board->move.tPosition, board->move.to))
 		if (ValiateStartingField(board->move.fPosition, board->move.from) && ValidateDestinationField(board->move.tPosition, board->move.to))
 			if (ValidateMoveDirection(board->move.fPosition, board->move.tPosition))
 				if (ValidateFullRow(board->move.fPosition, board->move.tPosition)) {
-					board->MakeMove();
-					FindChains(COLLECT_PAWNS);
-					board->NextPlayer();
+					if (extend) {
+						board->MakeMove();
+						if (ValidateMoveExtend()) {
+							FindChains(COLLECT_PAWNS);
+							board->NextPlayer();
+							Logger::Log(MOVE_COMMITTED);
+						}
+					}
+					else {
+						board->MakeMove();
+						FindChains(COLLECT_PAWNS);
+						board->NextPlayer();
+						Logger::Log(MOVE_COMMITTED);
+					}
 				}
 }
 
@@ -264,7 +275,7 @@ bool Validator::CheckChain(Board::Visited**& visited, const Board::Position& pos
 	int visitedCounter = 1;
 	int chainSize = 1;
 
-	Board::Visited::Directions direction;
+	Directions direction;
 	FillDirections(direction, rowOffset, colOffset);
 
 	int row, col, i;
@@ -288,12 +299,12 @@ bool Validator::CheckChain(Board::Visited**& visited, const Board::Position& pos
 	return chainSize >= target;
 }
 
-void Validator::FillDirections(Board::Visited::Directions& direction, int rowOffset, int colOffset) const {
+void Validator::FillDirections(Directions& direction, int rowOffset, int colOffset) const {
 	if (rowOffset == -1 || rowOffset == 1) {
-		if (colOffset == -1 || colOffset == 1) direction = Board::Visited::SLANT;
-		else direction = Board::Visited::HORIZONTAL;
+		if (colOffset == -1 || colOffset == 1) direction = SLANT;
+		else direction = HORIZONTAL;
 	}
-	else direction = Board::Visited::VERTICAL;
+	else direction = VERTICAL;
 }
 
 void Validator::AddNeighbIfDiff(std::vector<Board::Position>& neighb, const int& row, const int& col, const char& player) const {
@@ -327,4 +338,130 @@ void Validator::CollectPawns(int i, const Board::Position& position, int rowOffs
 			board->boardInfo.reserve[player == 'W' ? WHITE : BLACK]++;
 		board->board[row][col] = '_';
 	}
+}
+
+bool Validator::OnTheSameRow(const Board::Position& pos1, const Board::Position& pos2) const{
+	return (pos1.col == pos2.col ||
+		pos1.row == pos2.row ||
+		(pos1.col - pos1.row) == (pos2.col - pos2.row));
+}
+
+bool Validator::ValidateMoveExtend() const {
+	char player = board->move.pawnCollectInfo.color;
+	if (!OnTheSameRow(board->move.pawnCollectInfo.fPosition, board->move.pawnCollectInfo.tPosition)) {
+		Logger::Log(WRONG_INDEX_OF_CHOSEN_ROW);
+		return false;
+	}
+	switch (ChainBetween(board->move.pawnCollectInfo.fPosition, board->move.pawnCollectInfo.tPosition, player)) {
+	case 2:
+		Logger::Log(WRONG_COLOR_OF_CHOSEN_ROW);
+		return false;
+	case 1:
+		Logger::Log(WRONG_INDEX_OF_CHOSEN_ROW);
+		return false;
+	default:
+		break;
+	}
+	int row1, row2, col1, col2;
+	row1 = board->move.pawnCollectInfo.fPosition.row;
+	row2 = board->move.pawnCollectInfo.tPosition.row;
+	col1 = board->move.pawnCollectInfo.fPosition.col;
+	col2 = board->move.pawnCollectInfo.tPosition.col;
+
+	CollectPawns(0, { row1, col1 }, row1 == row2 ? 0 : 1, col1 == col2 ? 0 : 1, player);
+	return true;
+}
+
+// TODO: do poprawy
+int Validator::ChainBetween(const Board::Position& pos1, const Board::Position& pos2, char player) const {
+	int chainCounter = 1;
+	int row, rowTarget, col, colTarget;
+	if (pos1.col == pos2.col) {
+		col = pos1.col;
+		if (pos1.row < pos2.row) {
+			row = pos1.row;
+			rowTarget = pos2.row;
+		}
+		else {
+			row = pos2.row;
+			rowTarget = pos1.row;
+		}
+		while (row != rowTarget) {
+			if (board->board[row][col] != player) return 2;
+			chainCounter++;
+			row++;
+		}
+	}
+	else if (pos1.row == pos2.row) {
+		row = pos1.row;
+		if (pos1.col < pos2.col) {
+			col = pos1.col;
+			colTarget = pos2.col;
+		}
+		else {
+			col = pos2.col;
+			colTarget = pos1.col;
+		}
+		while (col != colTarget) {
+			if (board->board[row][col] != player) return 2;
+			chainCounter++;
+			row++;
+		}
+	}
+	else {
+		if (pos1.row < pos2.row) {
+			if (pos1.col < pos2.col) {
+				col = pos1.col;
+				row = pos1.row;
+				colTarget = pos2.col;
+
+				while (col != colTarget) {
+					if (board->board[row][col] != player) return 2;
+					chainCounter++;
+					row++;
+					col++;
+				}
+			}
+			else {
+				col = pos1.col;
+				row = pos1.row;
+				colTarget = pos2.col;
+				while (col != colTarget) {
+					if (board->board[row][col] != player) return 2;
+					chainCounter++;
+					row++;
+					col--;
+				}
+			}
+
+		}
+		else {
+			if (pos1.col < pos2.col) {
+				col = pos2.col;
+				row = pos2.row;
+				colTarget = pos1.col;
+				while (col != colTarget) {
+					if (board->board[row][col] != player) return 2;
+					chainCounter++;
+					row++;
+					col--;
+				}
+			}
+			else {
+				col = pos2.col;
+				row = pos2.row;
+				colTarget = pos1.col;
+
+				while (col != colTarget) {
+					if (board->board[row][col] != player) return 2;
+					chainCounter++;
+					row++;
+					col++;
+				}
+			}
+		}
+	}
+	if (chainCounter < board->boardInfo.pawnsToCapture) return 1;
+	return 0;
+
 }

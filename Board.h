@@ -32,20 +32,30 @@ public:
 		bool operator==(const Position& other) const {
 			return (row == other.row && col == other.col);
 		}
+		bool operator!=(const Position& other) const {
+			return (row != other.row || col != other.col);
+		}
 	};
+
 	struct Move {
 		std::string from;
 		std::string to;
 		Position fPosition;
 		Position tPosition;
+
+		struct PawnCollectInfo {
+			char color = 0;
+			std::string from;
+			std::string to;
+			Position fPosition;
+			Position tPosition;
+		} pawnCollectInfo;
+
 	} move;
 
+	
+
 	struct Visited {
-		static enum Directions {
-			HORIZONTAL,
-			VERTICAL,
-			SLANT,
-		} directions;
 		bool visitDirection[3] = {};
 	};
 
@@ -60,5 +70,6 @@ public:
 	void MakeMove();
 	void MoveRow(int rowOffset, int colOffset, bool isCorner);
 	void NextPlayer();
+	void SetPawnCollectInfo(char color, const std::string& from, const std::string& to);
 };
 

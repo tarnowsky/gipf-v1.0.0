@@ -80,7 +80,6 @@ void Board::MoveRow(int rowOffset, int colOffset, bool isCorner) {
 		if (nextPawn == '_') break;
 		pawnToPlace = nextPawn;
 	}
-	Logger::Log(MOVE_COMMITTED);
 }
 
 void Board::MakeMove() {
@@ -141,4 +140,14 @@ void Board::SetMove(const std::string& from, const std::string& to) {
 
 void Board::NextPlayer() {
 	boardInfo.activePlayer = boardInfo.activePlayer == 'W' ? 'B' : 'W';
+}
+
+void Board::SetPawnCollectInfo(char color, const std::string& from, const std::string& to) {
+	if (color == 'w')
+		move.pawnCollectInfo.color = 'W';
+	else move.pawnCollectInfo.color = 'B';
+	move.pawnCollectInfo.from = from;
+	move.pawnCollectInfo.to = to;
+	move.pawnCollectInfo.fPosition = FieldDecoder(from);
+	move.pawnCollectInfo.tPosition = FieldDecoder(to);
 }

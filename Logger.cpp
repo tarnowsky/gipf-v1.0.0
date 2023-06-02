@@ -26,6 +26,12 @@ void Logger::Log(ReturnLogs returnLog) {
 	case EMPTY_BOARD:
 		std::cout << "EMPTY_BOARD";
 		break;
+	case WRONG_COLOR_OF_CHOSEN_ROW:
+		std::cout << "WRONG_COLOR_OF_CHOSEN_ROW";
+		break;
+	case WRONG_INDEX_OF_CHOSEN_ROW:
+		std::cout << "WRONG_INDEX_OF_CHOSEN_ROW";
+		break;
 	default:
 		std::cout << "Error. Return log not found.";
 	}

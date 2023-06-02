@@ -35,3 +35,9 @@ enum ReturnLogs {
 	WRONG_COLOR_OF_CHOSEN_ROW,
 	WRONG_INDEX_OF_CHOSEN_ROW,
 };
+
+enum Directions {
+	HORIZONTAL,
+	VERTICAL,
+	SLANT,
+};
