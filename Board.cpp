@@ -151,3 +151,16 @@ void Board::SetPawnCollectInfo(char color, const std::string& from, const std::s
 	move.pawnCollectInfo.fPosition = FieldDecoder(from);
 	move.pawnCollectInfo.tPosition = FieldDecoder(to);
 }
+
+bool Board::operator==(const Board& other) const {
+	if (boardInfo.dimension != other.boardInfo.dimension) return false;
+	for (int row = 1; row < boardInfo.dimension * 2; row++)
+		for (int col = 1; col < boardInfo.dimension * 2; col++)
+			if (board[row][col] != other.board[row][col])
+				return false;
+	return true;
+}
+
+bool Board::operator!=(const Board& other) const {
+	return !(*this==other);
+}

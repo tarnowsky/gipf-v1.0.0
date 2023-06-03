@@ -463,5 +463,4 @@ int Validator::ChainBetween(const Board::Position& pos1, const Board::Position& 
 	}
 	if (chainCounter < board->boardInfo.pawnsToCapture) return 1;
 	return 0;
-
 }

@@ -25,7 +25,7 @@ public:
 	} boardExpectedValues{};
 
 	struct Position {
-		int row, col;
+		mutable int row, col;
 		void Print() const {
 			std::cout << row << ", " << col << std::endl;
 		}
@@ -34,6 +34,10 @@ public:
 		}
 		bool operator!=(const Position& other) const {
 			return (row != other.row || col != other.col);
+		}
+		int& operator[](int indx) const {
+			if (indx == 0) return row;
+			return col;
 		}
 	};
 
@@ -71,5 +75,7 @@ public:
 	void MoveRow(int rowOffset, int colOffset, bool isCorner);
 	void NextPlayer();
 	void SetPawnCollectInfo(char color, const std::string& from, const std::string& to);
+	bool operator==(const Board& other) const;
+	bool operator!=(const Board& other) const;
 };
 
